@@ -41,17 +41,88 @@ HoC - мощный паттерн, часто используемый при р
 
 ПРИМЕР с ссылкой на lite-redux
 
-При использовании такого подхода нужно соблюдать некоторые меры предосторожности: 
-- быть внимательным при именовании свойств и методов, так как можно переопределить свойста наследуемого компонента
-- стараться максимально наглядно обявлять доступные извне (по отношению к "HoC") свойства(!!!, для этого можно сделать отдельный HoC)
-- не забывать, что при передаче в качестве колбека на какое-либо событие метода класса, есть вероятность что этот метод будет  переопределен где-то в цепочке наследования, и на событие окажется подписанным только последний из "HoC'ов", а не оба.
+```js
+import { bindActionCreators } from "redux";
 
-Иллюстрацией последнего пункта может быть 
+export default store => (mapStateToProps, mapDispatchToProps) => Component =>
+  class Connect extends Component {
+    constructor(props) {
+      super(props);
+      this._getPropsFromStore(mapStateToProps);
+      this._inheritChainProps = (this._inheritChainProps || []).concat(
+        mapStateToProps
+      );
+    }
 
+    _getPropsFromStore = mapStateToProps => {
+      const state = store.getState();
+      const props = mapStateToProps(state);
+
+      for (const prop in props) {
+        this[prop] = props[prop];
+      }
+    };
+
+    _getInheritChainProps = () => {
+      this._inheritChainProps.forEach(i => this._getPropsFromStore(i));
+    };
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this._unsubscriber = store.subscribe(this._getInheritChainProps);
+
+      const dispatchers =
+        typeof mapDispatchToProps === "function"
+          ? mapDispatchToProps(store.dispatch)
+          : mapDispatchToProps;
+      for (const dispatcher in dispatchers) {
+        typeof mapDispatchToProps === "function"
+          ? (this[dispatcher] = dispatchers[dispatcher])
+          : (this[dispatcher] = bindActionCreators(
+              dispatchers[dispatcher],
+              store.dispatch,
+              () => store.getState()
+            ));
+      }
+    }
+
+    disconnectedCallback() {
+      this._unsubscriber();
+      super.disconnectedCallback();
+    }
+  };
+```
+
+При использовании такого подхода для реализации аналога HoC нужно соблюдать некоторые меры предосторожности: 
+- быть внимательным при именовании свойств и методов, так как можно переопределить их в наследуемом компоненте-классе
+- не забывать, что при передаче в качестве колбека на какое-либо событие метода класса, есть вероятность что этот метод будет  переопределен где-то в цепочке наследования, и на событие окажется подписанным только последний из "HoC'ов", а не оба
+- стараться максимально наглядно обявлять доступные извне (по отношению к "HoC") свойства
+(!!!, для этого можно сделать отдельный HoC)
+
+```js
+export const connect = (
+  mapStateToProps,
+  mapDispatchToProps,
+  extendProps
+) => Component =>
+  class ConnectWithProps extends connectOnlyRedux(
+    mapStateToProps,
+    mapDispatchToProps
+  )(Component) {
+    static get properties() {
+      return {
+        ...super.properties,
+        ...extendProps
+      };
+    }
+  };
+```
 
 - посмотреть реализацию react redux
 - https://github.com/jmas/lit-redux
-- написать о том что из замыкания использовать, чтобы все классы обернулись
+
+***
 
 
 
