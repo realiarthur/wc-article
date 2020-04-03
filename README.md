@@ -149,12 +149,9 @@ export default connect(mapStateToProps, mapDispatchToProps)(Component)
 репозиторий про исследование
 смотреть историю коммитов sso-frontend и библиотек
 
-Привычные концепции (жизненный цикл, hoc) 
-
 lite-form: submit, blur 
 (когда были slot, когда перестали быть, но использовал расширение html, почему отказался)
 
-redux
 css host
 no shadowDom (Так у меня в основном получается custom elements??), 
 css через vars
