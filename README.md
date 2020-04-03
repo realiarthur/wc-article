@@ -50,14 +50,16 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
       super(props);
       this._getPropsFromStore=this._getPropsFromStore.bind(this)
       this._getInheritChainProps=this._getInheritChainProps.bind(this)
-
+      
+      // Накопление mapStateToProps
       this._inheritChainProps = (this._inheritChainProps || []).concat(
         mapStateToProps
       );
     }
-
+     
+    // Функция для получения данных из store
     _getPropsFromStore (mapStateToProps) {
-      if (!mapStateToProps) return;
+      if (!mapStateToProps) return;   
       const state = store.getState();
       const props = mapStateToProps(state);
 
@@ -65,20 +67,23 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
         this[prop] = props[prop];
       }
     };
-
+    
+    // Коллбек для подписки на изменние store, который вызовет все mapStateToProps из цепочки наследования
     _getInheritChainProps () {
       this._inheritChainProps.forEach(i => this._getPropsFromStore(i));
     };
 
     connectedCallback() {
       super.connectedCallback();
-
+      
+      // Передача данных из store в компонент
       this._getPropsFromStore(mapStateToProps);
-
+      
+      // Подписка на изменение store
       this._unsubscriber = store.subscribe(this._getInheritChainProps);
-
+      
+      // Передача действий для store в компонент
       if (!mapDispatchToProps) return;
-
       const dispatchers =
         typeof mapDispatchToProps === "function"
           ? mapDispatchToProps(store.dispatch)
@@ -95,6 +100,7 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
     }
 
     disconnectedCallback() {
+      // Удаление подписки на изменение store
       this._unsubscriber();
       super.disconnectedCallback();
     }
