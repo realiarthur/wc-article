@@ -37,9 +37,9 @@ lit-html предоставляет потрясaющую возможность
  
   
 ## Компоненты высшего порядка
-HoC - мощный паттерн, часто используемый при работае с React или Vue. При его использовании композиция компонентов становится простой и лаконичной, и хотелось бы использовать какой-то его аналог при работе с веб-компонентами. Так как веб-компоненты - это классы, для себя, в качестве аналога HoC, я решил использовать фунции, которые бы возвращали расширенние класса, переданного им в качестве параметра. 
+HOC - мощный паттерн, часто используемый при работае с React или Vue. При его использовании композиция компонентов становится простой и лаконичной, и хотелось бы использовать какой-то его аналог при работе с веб-компонентами. Так как веб-компоненты - это классы, для себя, в качестве аналога HOC, я решил использовать фунции, которые бы возвращали расширенние класса, переданного им в качестве параметра. 
 
-< описание ПРИМЕРа (+накопление из все цепочки наследования) с ссылкой на lite-redux >
+В проекте мне необходим был redux, поэтому, в качестве примера, приведу код [коннектора для него.](https://www.npmjs.com/package/lite-redux). Ниже представлен код декоратора, принимающего store и возвращающего стандартный коннектор redux. Внутри класса происходит накопление mapStateToProps из всей цепочки наследования (для тех случаев если в ней будет HoС, который также общается с redux), чтобы в дальнейшем, когда компонент будет встроен в DOM, одним колбеком все их подписать на изменение состояния redux. При удалении компонента из DOM эта подписка удаляется.
 
 ```js
 import { bindActionCreators } from "redux";
@@ -48,13 +48,16 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
   class Connect extends Component {
     constructor(props) {
       super(props);
-      this._getPropsFromStore(mapStateToProps);
+      this._getPropsFromStore=this._getPropsFromStore.bind(this)
+      this._getInheritChainProps=this._getInheritChainProps.bind(this)
+
       this._inheritChainProps = (this._inheritChainProps || []).concat(
         mapStateToProps
       );
     }
 
-    _getPropsFromStore = mapStateToProps => {
+    _getPropsFromStore (mapStateToProps) {
+      if (!mapStateToProps) return;
       const state = store.getState();
       const props = mapStateToProps(state);
 
@@ -63,14 +66,18 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
       }
     };
 
-    _getInheritChainProps = () => {
+    _getInheritChainProps () {
       this._inheritChainProps.forEach(i => this._getPropsFromStore(i));
     };
 
     connectedCallback() {
       super.connectedCallback();
 
+      this._getPropsFromStore(mapStateToProps);
+
       this._unsubscriber = store.subscribe(this._getInheritChainProps);
+
+      if (!mapDispatchToProps) return;
 
       const dispatchers =
         typeof mapDispatchToProps === "function"
@@ -94,33 +101,38 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
   };
 ```
 
-При использовании такого подхода для реализации аналога HoC нужно соблюдать некоторые меры предосторожности: 
-- быть внимательным при именовании свойств и методов, так как можно переопределить их в наследуемом компоненте-классе
-- не забывать, что при передаче в качестве колбека на какое-либо событие метода класса, есть вероятность что этот метод будет  переопределен где-то в цепочке наследования, и на событие окажется подписанным только последний из "HoC'ов", а не оба
-- стараться максимально наглядно обявлять доступные извне (по отношению к "HoC") свойства
-(!!!, для этого можно сделать отдельный HoC)
+Удобнее всего использовать этот метод для создания и экпорта обычного коннектора, при инициализации store, который потом и использовать в качестве HOC:
 
 ```js
-export const connect = (
-  mapStateToProps,
-  mapDispatchToProps,
-  extendProps
-) => Component =>
-  class ConnectWithProps extends connectOnlyRedux(
-    mapStateToProps,
-    mapDispatchToProps
-  )(Component) {
-    static get properties() {
-      return {
-        ...super.properties,
-        ...extendProps
-      };
-    }
-  };
+// store.js
+import { createStore, combineReducers } from "redux";
+import makeConnect from "lite-redux";
+
+const reducer = combineReducers({ ... });
+
+const store = createStore(reducer);
+
+export default store;
+
+export const connect = makeConnect(store);
 ```
 
-- посмотреть реализацию react redux
-- https://github.com/jmas/lit-redux
+```js
+// Component.js
+import { connect } from "./store";
+
+class Component extends WhatEver {
+    ...
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Component)
+
+```
+
+При использовании такого подхода для реализации аналога HOC нужно соблюдать некоторые меры предосторожности: 
+- быть внимательным при именовании свойств и методов, так как можно переопределить их в наследуемом компоненте-классе
+- не забывать, что при передаче в качестве колбека на какое-либо событие метода класса, есть вероятность что этот метод будет  переопределен где-то в цепочке наследования, и на событие окажется подписанным только последний из "HOC'ов", а не оба
+- стараться максимально наглядно обявлять доступные извне (по отношению к "HOC") свойства. 
 
 ***
 
