@@ -206,3 +206,5 @@ lite-form: submit, blur
 (когда были slot, когда перестали быть, но использовал расширение html, почему отказался)
 
 no shadowDom (Так у меня в основном получается custom elements??), 
+
+ addClass: { attribute: "classname", reflect: false },
