@@ -121,6 +121,7 @@ const store = createStore(reducer);
 
 export default store;
 
+// создание стандартного коннектора
 export const connect = makeConnect(store);
 ```
 
