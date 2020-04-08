@@ -77,29 +77,27 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
     };
 
     connectedCallback() {
-      super.connectedCallback();
-      
-      // Передача данных из store в компонент
       this._getPropsFromStore(mapStateToProps);
-      
-      // Подписка на изменение store
+
       this._unsubscriber = store.subscribe(this._getInheritChainProps);
-      
-      // Передача действий для store в компонент
-      if (!mapDispatchToProps) return;
-      const dispatchers =
-        typeof mapDispatchToProps === "function"
-          ? mapDispatchToProps(store.dispatch)
-          : mapDispatchToProps;
-      for (const dispatcher in dispatchers) {
-        typeof mapDispatchToProps === "function"
-          ? (this[dispatcher] = dispatchers[dispatcher])
-          : (this[dispatcher] = bindActionCreators(
-              dispatchers[dispatcher],
-              store.dispatch,
-              () => store.getState()
-            ));
+
+      if (mapDispatchToProps) {
+        const dispatchers =
+          typeof mapDispatchToProps === "function"
+            ? mapDispatchToProps(store.dispatch)
+            : mapDispatchToProps;
+        for (const dispatcher in dispatchers) {
+          typeof mapDispatchToProps === "function"
+            ? (this[dispatcher] = dispatchers[dispatcher])
+            : (this[dispatcher] = bindActionCreators(
+                dispatchers[dispatcher],
+                store.dispatch,
+                () => store.getState()
+              ));
+        }
       }
+
+      super.connectedCallback();
     }
 
     disconnectedCallback() {
