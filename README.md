@@ -121,7 +121,7 @@ const store = createStore(reducer);
 
 export default store;
 
-// создание стандартного коннектора
+// Создание стандартного коннектора
 export const connect = makeConnect(store);
 ```
 
@@ -203,7 +203,7 @@ customElements.define("password-input", withPassword(TextInput));
 С одной стороны мне нужен был функцонал тега ```<form>``` (например, вызов submit при нажатии на Enter), но не хотелось в дополнение к кастомному тегу формы писать его каждый раз в Light DOM (дочерние элементы компонента, вроде children в React). С другой, я не хотел использовать передачу render-функции для формы - хотел чтобы верстка смотрелась максимально нативно. И безымянный ```<slot>``` позволил мне это сделать: 
 
 ```html
-// Использование формы
+<!-- Использование формы -->
 <lite-form>
  <my-custom-input name='login'></my-custom-input>
  <another-custom-input name='name'></another-custom-input>
