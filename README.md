@@ -34,6 +34,7 @@ lit-html предоставляет потрясaющую возможность
 
 < !!!ПРИМЕР c директивами>
 
+https://lit-html.polymer-project.org/guide/template-reference#guard
 
 ## css через vars - в качестве кастомизации. 
 
