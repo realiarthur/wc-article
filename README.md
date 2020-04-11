@@ -141,6 +141,11 @@ export default connect(mapStateToProps, mapDispatchToProps)(Component)
 ### Расширение отображения и наблюдаемых свойств
 Во многих случаях кроме расширения функционала компонента требуется обернуть его отображение. Для этого удобно использовать функцию рендеринга расширяемого компонента. Кроме того, бывает полезно расширить список наблюдаемых свойств для обеспечения реактивности.  Для иллюстрации приведу упрощенный код поля ввода пароля, которое расширяет переданный ей компонент текстового поля ввода:
 
+< !!! static get observedAttributes() {
+      return [...super.observedAttributes, "values", "errors", "touched"];
+    }>
+
+
 ```js
 const withPassword = Component =>
   class PasswordInput extends Component {
