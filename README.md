@@ -245,7 +245,7 @@ const getFormClass = element => {
 
 Тут все тривиально: рекурсивный поиск элемента с атрибутом, указывающим что это искомая форма. Хочется отметить, что благодаря функции [getRootNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode), поиск происходит сквозь дерево вложенных Shadow DOM - удобная функция при решении таких специфических задач.
 
-< !!! css host rtl>
+< !!! :host-context(body[dir="rtl"]) .option {        text-align: right;      } >
 ***
 
 репозиторий про исследование
