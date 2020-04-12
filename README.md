@@ -265,3 +265,8 @@ lite-form: submit, blur
 no shadowDom (Так у меня в основном получается custom elements??), 
 
  addClass: { attribute: "classname", reflect: false },
+ 
+ 
+ ***
+ полезные ссылки 
+ https://vaadin.com/router
