@@ -37,7 +37,12 @@ ifDefined
 
 < !!!ПРИМЕР c директивами>
 
+
+То что при беглом взгляде на документацию не кидается в глаза, но может быть очень полезным
+svg``
+
 https://lit-html.polymer-project.org/guide/template-reference#guard
+https://lit-html.polymer-project.org/guide/template-reference#unsafehtml
 
 ## css через vars - в качестве кастомизации. 
 
