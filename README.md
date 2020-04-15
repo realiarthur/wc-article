@@ -93,7 +93,7 @@ const renderCounter = directive(() => (part) =>
 
 lit-html имеет полезный [набор встроенных директив](https://lit-html.polymer-project.org/guide/template-reference#built-in-directives). Не буду останавливаться на этом подробно, но там есть аналоги некоторых реактовских хуков, интересные функции для работы со стилями и классами как с объектами, функции асинхронного обновления контента, оптимизации, небезопасной установки html и др. 
 
-Рядом с директивой можно хранить более сложный state для использования внутри директивы, [тут пример](https://lit-html.polymer-project.org/guide/creating-directives#maintaining-state). 
+Рядом с директивой можно хранить более сложный state для использования внутри директивы. Пример [тут](https://lit-html.polymer-project.org/guide/creating-directives#maintaining-state). 
 
 Кастомные директивы и декораторы можно также использовать как аналог компонентов высшего порядка. При таком подходе необходимо самостоятельно позаботится о реактивности внутри директивы. Пример [тут](https://github.com/jmas/lit-redux/blob/master/index.js). 
 
