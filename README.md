@@ -385,7 +385,7 @@ class LiteForm extends HTMLFormElement {
 customElements.define('lite-form', LiteForm, { extends: 'form' })
 ```
 Я не переопределял рендеринг, все работало как в обычной форме, только с дополнительным функционалом:
-```
+```js
 const MyForm = html`<form
   method="POST"
   is="native-form"
