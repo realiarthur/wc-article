@@ -426,3 +426,4 @@ render(html`${MyForm}`, document.getElementById('root'))
  полезные ссылки 
  https://vaadin.com/router
  https://github.com/web-padawan/awesome-lit-html
+ https://www.npmjs.com/package/fit-html
