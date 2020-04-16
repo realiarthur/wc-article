@@ -371,15 +371,14 @@ createRenderRoot() {
 После отказа от Shadow DOM мне показалось хорошей идеей расширить встроенный класс HTMLFormElement и тег `<form>` - верстка бы смотрелось как нативная, при этом сохранился бы доступ ко всем событиям формы, и это требовало минимальных изменений кода:
 ```js
 class LiteForm extends HTMLFormElement {
-  constructor() {
-    super()
-    // {...}
+  connectedCallback() {
     this.addEventListener('submit', this.handleSubmit)
   }
-  
-  connectedCallback(){
+
+  disconnectedCallback() {
+    this.removeEventListener('submit', this.handleSubmit)
   }
-  
+
   //<... функционал формы ...>
 }
 
@@ -387,15 +386,18 @@ customElements.define('lite-form', LiteForm, { extends: 'form' })
 ```
 Я не переопределял рендеринг, все работало как в обычной форме, только с дополнительным функционалом:
 ```
-const MyForm = html`
-  <form
-    method="POST"
-    is="lite-form"
-    .onSubmit=${{...}}
-    .initialValues=${{...}}
-    .validatinSchema=${{...}}
-  ></form>
-`
+const MyForm = html`<form
+  method="POST"
+  is="native-form"
+  .onSubmit=${{...}}
+  .initialValues=${{...}}
+  .validationSchema=${{...}}
+>
+  <custom-input name="firstName"></custom-input>
+  <custom-input name="lastName"></custom-input>
+  <button type="submit">Submit</button>
+</form>`
+
 render(html`${MyForm}`, document.getElementById('root'))
 ```
 
