@@ -387,7 +387,7 @@ class LiteForm extends HTMLFormElement {
 
 customElements.define('lite-form', LiteForm, { extends: 'form' })
 ```
-Я не переопределял рендеринг, все работало как в обычной форме, только с дополнительным функционалом:
+Все работало как в обычной форме, только с дополнительным функционалом:
 ```js
 // Пример формы
 const MyForm = html`<form
