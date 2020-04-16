@@ -376,10 +376,12 @@ createRenderRoot() {
 class LiteForm extends HTMLFormElement {
   connectedCallback() {
     this.addEventListener('submit', this.handleSubmit)
+    this.addEventListener('reset', this.handleReset)
   }
 
   disconnectedCallback() {
     this.removeEventListener('submit', this.handleSubmit)
+    this.removeEventListener('reset', this.handleReset)
   }
 
   //<... функционал формы ...>
