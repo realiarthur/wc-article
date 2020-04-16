@@ -304,9 +304,9 @@ const MyForm = () =>
   html`<lite-form
     method="post"
     .formTemplate=${formTemplate}
-    .onSubmit=${...}
-    .initialValues=${...}
-    .validationSchema=${...}
+    .onSubmit=${{...}}
+    .initialValues=${{...}}
+    .validationSchema=${{...}}
   ></lite-form>`
 
 render(
