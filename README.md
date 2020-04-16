@@ -280,11 +280,11 @@ customElements.define("lite-form", LiteForm);
 ```
 
 ```js
-// Использование формы
+// Пример формы
 import { html, render } from 'lit-element'
 
 const formTemplate = ({ values, handleBlur, handleChange, ...props }) =>
-  html` <input
+  html`<input
       .value=${values.firstName}
       @input=${handleChange}
       @blur=${handleBlur}
@@ -325,7 +325,7 @@ const getFormClass = element => {
 С использованием `withField` я мог сильно упростить шаблон формы:
 ```js
 const formTemplate = (props) =>
-  html` <custom-input name="firstName"></custom-input>
+  html`<custom-input name="firstName"></custom-input>
     <custom-input name="lastName"></custom-input>
     <button type="submit">Submit</button>`
 ```
@@ -370,6 +370,7 @@ createRenderRoot() {
 ### Версия 2. Расширение встроенного элемента
 После отказа от Shadow DOM мне показалось хорошей идеей расширить встроенный класс HTMLFormElement и тег `<form>` - верстка бы смотрелось как нативная, при этом сохранился бы доступ ко всем событиям формы, и это требовало минимальных изменений кода:
 ```js
+// Компонент формы
 class LiteForm extends HTMLFormElement {
   connectedCallback() {
     this.addEventListener('submit', this.handleSubmit)
@@ -386,9 +387,10 @@ customElements.define('lite-form', LiteForm, { extends: 'form' })
 ```
 Я не переопределял рендеринг, все работало как в обычной форме, только с дополнительным функционалом:
 ```js
+// Пример формы
 const MyForm = html`<form
   method="POST"
-  is="native-form"
+  is="lite-form"
   .onSubmit=${{...}}
   .initialValues=${{...}}
   .validationSchema=${{...}}
@@ -400,6 +402,9 @@ const MyForm = html`<form
 
 render(html`${MyForm}`, document.getElementById('root'))
 ```
+Здесь хотелось бы обратить внимание на первый аргумент в функции `customElements.define` и на атрибут `is` в элементе формы, которые указывают на то, какого "типа" будет тег, они должны быть равны. А так же на третий аргумент `customElements.define` в котором указывается какой именно тег будет расширяться.
+
+Все работало отлично и прекрасно смотрелось, но не все браузеры поддерживают идею расширения встроенных компонентов.
 
 
 ## Заключение 
