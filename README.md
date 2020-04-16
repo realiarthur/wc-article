@@ -262,9 +262,9 @@ customElements.define("password-input", withPassword(TextInput));
 ### Версия 1. Shadow DOM & Slots
 Первое что пришло мне на ум - сделать стандартные веб-компоненты полей ввода и формы, ипользуя Shadow DOM, как часть лучших практик, обернуть поля ввода в HOC для общения с формой, вставлять форму на старницу отдельным кастомным тегом. Обо всем по порядку.
 
-С одной стороны мне нужен был функцонал тега `<form>` и его класса HTMLFormElement (например, вызов submit при нажатии на Enter), но не хотелось в дополнение к кастомному тегу формы писать его каждый раз в Light DOM (дочерние элементы компонента, вроде children в React). С другой, я не мог использовать слот, чтобы обернуть его содержимое в тег `<form>`, потому что тогда элементы формы фактически располагались бы снаружи (к слову, именно из-за этого стилизовать содержимое слотов можно из внешнего документа) компонента формы, и `<form>` не реагировал на их события. 
+С одной стороны мне нужен был функцонал тега `<form>` и его класса HTMLFormElement (например, вызов submit при нажатии на Enter), но не хотелось в дополнение к кастомному тегу формы писать его каждый раз в Light DOM (дочерние элементы компонента, вроде children в React). С другой, я не мог использовать слот, чтобы обернуть его содержимое в тег `<form>`, потому что тогда элементы формы фактически располагались бы снаружи (к слову, именно из-за этого стилизовать содержимое слотов можно из внешнего документа) компонента формы, и `<form>` не реагировал бы на их события. 
 
-Решением стала передача шаблона в качетсве свойства для кастомной формы. Это некий аналог передачи Render-функции в React: 
+Решением стала передача шаблона в качестве свойства для кастомной формы. Это некий аналог передачи render-функции в React: 
 
 ```js
 // Компонент формы
@@ -275,7 +275,7 @@ class LiteForm extends LitElement {
   
   render() {
     return html`<form @submit=${this.handleSubmit} method=${this.method}>
-      ${this.formRender(this)}
+      ${this.formTemplate(this)}
     </form>`
   }
 }
@@ -287,16 +287,14 @@ customElements.define("lite-form", LiteForm);
 // Использование формы
 import { html, render } from 'lit-element'
 
-const formRender = ({ values, handleBlur, handleChange, ...props }) =>
+const formTemplate = ({ values, handleBlur, handleChange, ...props }) =>
   html` <input
-      name="login"
-      .value=${values.login}
+      .value=${values.firstName}
       @input=${handleChange}
       @blur=${handleBlur}
     />
     <input
-      name="password"
-      .value=${values.password}
+      .value=${values.lastName}
       @input=${handleChange}
       @blur=${handleBlur}
     />
@@ -305,20 +303,10 @@ const formRender = ({ values, handleBlur, handleChange, ...props }) =>
 const MyForm = () =>
   html`<lite-form
     method="post"
-    .formRender=${formRender}
-    .onSubmit=${values => console.log(values)}
-    .initialValues=${{
-      login: '',
-      password: ''
-    }}
-    .validationSchema=${{
-      login: value => {
-        if (!value) return 'Required'
-      },
-      password: value => {
-        if (value.length < 5) return 'Must be more than 5 letters'
-      }
-    }}
+    .formTemplate=${formTemplate}
+    .onSubmit=${...}
+    .initialValues=${...}
+    .validationSchema=${...}
   ></lite-form>`
 
 render(
@@ -326,7 +314,7 @@ render(
 )
 ```
 
-Конечно мне не хотелось каждый раз передавать свойства и события формы полям ввода, к тому же я хотел работать с кастомными полями ввода, и упростить вывод ошибок. Поэтому мне необходимы были компоненты высшего порядка для работы с формой. Такая реализация требовала, чтобы HOC'и были способны самостоятельно найти свою форму или общаться с ней посредством событий. Перебрав несколько вариантов (общение через шину событий, общий контекст - все они подходили, если форма на странице только одна), я остановился на очень простом, но рабочем:
+Конечно мне не хотелось каждому полю ввода передавать свойства и события формы, к тому же я хотел работать с кастомными полями ввода, и упростить вывод ошибок. Поэтому мне необходимы были несколько компонентов высшего порядка для работы с формой. Такая реализация требовала, чтобы HOC'и были способны самостоятельно найти свою форму или общаться с ней посредством событий. Перебрав несколько вариантов (общение через шину событий, общий контекст - все они подходили, если форма на странице только одна), я остановился на очень простом, но рабочем:
 
 ```js
 // здесь константа IS_LITE_FORM - это назывние булевого атрибута, который имеет каждый элемент кастомной формы
@@ -339,13 +327,13 @@ const getFormClass = element => {
   return host[IS_LITE_FORM] ? host : getFormClass(host);
 };
 ```
-Здесь все тривиально: рекурсивный поиск элемента с атрибутом, указывающим что это искомая форма. Хочется отметить, что благодаря функции [getRootNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode), поиск происходит сквозь дерево вложенных Shadow DOM - удобная функция при решении таких специфических задач.
+Здесь все тривиально: рекурсивный поиск элемента с атрибутом, указывающим что это искомая форма. Отметить хотелось функцию [getRootNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode), благодаря которой поиск происходит сквозь дерево вложенных Shadow DOM - необходимая функция при решении таких специфических задач.
 
 С использованием HOC я мог сильно упростить шаблон формы:
 ```js
-const formRender = (props) =>
-  html` <custom-input name="login"></custom-input>
-    <custom-input name="password" type="password"></custom-input>
+const formTemplate = (props) =>
+  html` <custom-input name="firstName"></custom-input>
+    <custom-input name="lastName"></custom-input>
     <button type="submit">Submit</button>`
 ```
 
