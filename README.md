@@ -211,10 +211,6 @@ const withPassword = Component =>
       return {
         // Предполагается что super.properties уже содержит свойство type
         ...super.properties,
-        
-        // addonIcon включен в properties только для иллюстрации.
-        // В данном конкретном классе это излишне, потому что
-        // реактивность обеспечит свойство type из super.properties
         addonIcon: { type: String },
       };
     }
