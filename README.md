@@ -135,7 +135,7 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
       }
     };
     
-    // Коллбек для подписки на изменние store, который вызовет все mapStateToProps из цепочки наследования
+    // Callback для подписки на изменние store, который вызовет все mapStateToProps из цепочки наследования
     _getInheritChainProps () {
       this._inheritChainProps.forEach(i => this._getPropsFromStore(i));
     };
