@@ -267,7 +267,7 @@ customElements.define("password-input", withPassword(TextInput));
 import { LitElement, html } from 'lit-element'
 
 class LiteForm extends LitElement {
-  //... функционал формы ...
+  /* ...функционал формы ... */
   
   render() {
     return html`<form @submit=${this.handleSubmit} method=${this.method}>
@@ -384,7 +384,7 @@ class LiteForm extends HTMLFormElement {
     this.removeEventListener('reset', this.handleReset)
   }
 
-  //... функционал формы ...
+  /* ...функционал формы ... */
 }
 
 customElements.define('lite-form', LiteForm, { extends: 'form' })
