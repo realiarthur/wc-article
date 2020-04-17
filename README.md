@@ -485,6 +485,7 @@ Shadow DOM определенно будет полезна для ряда сл
 
 
 ### Полезные ссылки 
+(webcomponents.org)[https://www.webcomponents.org/]
 [Polymer,](https://www.polymer-project.org/)
 [LitElement,](https://lit-element.polymer-project.org/)
 [lit-html,](https://lit-html.polymer-project.org/)
