@@ -277,7 +277,6 @@ customElements.define('lite-form', LiteForm)
 
 ```js
 // Пример формы
-// Пример формы
 import { html, render } from 'lit-element'
 
 const formTemplate = ({ values, handleBlur, handleChange, ...props }) =>
