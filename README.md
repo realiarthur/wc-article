@@ -31,20 +31,20 @@ LitElement - это еще одна зависимость, кто-то даже
 К теме статьи это имеет косвенное отношение, но lit-html в свои ~3.5kB вмещает настолько удобную возможность описания интерфейса с помощью функций, что невозможно умолчать. Причем обновление DOM-структур таких "компонентов" происходит оптимизированно - рендерятся только те блоки, значения которых изменились с предыдущего рендера. И все это без Virtual DOM! В некоторых случаях и при должной находчивости весь интерфейс можно описать только функциями, декораторами и директивами (о них чуть ниже):
 
 ```js
-import {html, render} from 'lit-html';
+import { html, render } from 'lit-html'
 
-const ui = (data) => html`...${data}...`;
+const ui = data => html`...${data}...`
 
-render(ui('Hello!'), document.body);
+render(ui('Hello!'), document.body)
 ```
 
 При этом в одних шаблонах можно использовать другие:
 ```js 
-const myHeader = html`<h1>Header</h1>`;
+const myHeader = html`<h1>Header</h1>`
 const myPage = html`
   ${myHeader}
   <div>Here's my main page.</div>
-`;
+`
 ```
 
 В других случаях можно придумать обертку для создания кастомных элементов из таких функций: 
@@ -60,7 +60,7 @@ const defineFxComponent = (tagName, FxComponent, Parent = LitElement) => {
 
 defineFxComponent('custom-ui', ui)
 
-render(html`<custom-ui .data='Hello!'></custom-ui>`, document.body);
+render(html`<custom-ui .data="Hello!"></custom-ui>`, document.body)
 ```
 
 Я не буду останавливаться на удобствах создания шаблонов, стилизации, передачи атрибутов, привязки данных и подписки на события, условном и цикличном рендере при работе с lit-html - это подробно описано в [документации](https://lit-html.polymer-project.org/guide/writing-templates). Остановлюсь на том, что возможно не ухватить при беглом взгляде на руководство, но может быть полезно.
@@ -84,11 +84,9 @@ render(html`<custom-ui .data='Hello!'></custom-ui>`, document.body);
 ```js
 import { directive } from 'lit-html'
 
-const renderCounter = directive(() => (part) =>
-  part.setValue(part.value === undefined
-     ? 0
-     :  part.value + 1);
- );
+const renderCounter = directive(() => part =>
+  part.setValue(part.value === undefined ? 0 : part.value + 1)
+)
 ```
 
 lit-html имеет полезный [набор встроенных директив](https://lit-html.polymer-project.org/guide/template-reference#built-in-directives). Не буду останавливаться на этом подробно, но там есть аналоги некоторых реактовских хуков, интересные функции для работы со стилями и классами как с объектами, функции асинхронного обновления контента, оптимизации, небезопасной установки html и др. 
@@ -109,96 +107,94 @@ HOC - мощный паттерн, часто используемый при р
 В проекте мне необходим был redux, поэтому в качестве примера рассмотрю [коннектор для него](https://github.com/realiarthur/lite-redux). Ниже представлен код декоратора, принимающего store и возвращающего стандартный коннектор redux. Внутри класса происходит накопление mapStateToProps из всей цепочки наследования (для тех случаев если в ней будет HOC, который также общается с redux), чтобы в дальнейшем, когда компонент будет встроен в DOM, одним колбеком все их подписать на изменение состояния redux. При удалении компонента из DOM эта подписка удаляется.
 
 ```js
-import { bindActionCreators } from "redux";
+import { bindActionCreators } from 'redux'
 
 export default store => (mapStateToProps, mapDispatchToProps) => Component =>
   class Connect extends Component {
     constructor(props) {
-      super(props);
-      this._getPropsFromStore=this._getPropsFromStore.bind(this)
-      this._getInheritChainProps=this._getInheritChainProps.bind(this)
-      
+      super(props)
+      this._getPropsFromStore = this._getPropsFromStore.bind(this)
+      this._getInheritChainProps = this._getInheritChainProps.bind(this)
+
       // Накопление mapStateToProps
       this._inheritChainProps = (this._inheritChainProps || []).concat(
         mapStateToProps
-      );
+      )
     }
-     
+
     // Функция для получения данных из store
-    _getPropsFromStore (mapStateToProps) {
-      if (!mapStateToProps) return;   
-      const state = store.getState();
-      const props = mapStateToProps(state);
+    _getPropsFromStore(mapStateToProps) {
+      if (!mapStateToProps) return
+      const state = store.getState()
+      const props = mapStateToProps(state)
 
       for (const prop in props) {
-        this[prop] = props[prop];
+        this[prop] = props[prop]
       }
-    };
-    
+    }
+
     // Callback для подписки на изменние store, который вызовет все mapStateToProps из цепочки наследования
-    _getInheritChainProps () {
-      this._inheritChainProps.forEach(i => this._getPropsFromStore(i));
-    };
+    _getInheritChainProps() {
+      this._inheritChainProps.forEach(i => this._getPropsFromStore(i))
+    }
 
     connectedCallback() {
-      this._getPropsFromStore(mapStateToProps);
+      this._getPropsFromStore(mapStateToProps)
 
-      this._unsubscriber = store.subscribe(this._getInheritChainProps);
+      this._unsubscriber = store.subscribe(this._getInheritChainProps)
 
       if (mapDispatchToProps) {
         const dispatchers =
-          typeof mapDispatchToProps === "function"
+          typeof mapDispatchToProps === 'function'
             ? mapDispatchToProps(store.dispatch)
-            : mapDispatchToProps;
+            : mapDispatchToProps
         for (const dispatcher in dispatchers) {
-          typeof mapDispatchToProps === "function"
+          typeof mapDispatchToProps === 'function'
             ? (this[dispatcher] = dispatchers[dispatcher])
             : (this[dispatcher] = bindActionCreators(
                 dispatchers[dispatcher],
                 store.dispatch,
                 () => store.getState()
-              ));
+              ))
         }
       }
 
-      super.connectedCallback();
+      super.connectedCallback()
     }
 
     disconnectedCallback() {
       // Удаление подписки на изменение store
-      this._unsubscriber();
-      super.disconnectedCallback();
+      this._unsubscriber()
+      super.disconnectedCallback()
     }
-  };
+  }
 ```
 
 Удобнее всего использовать этот метод для создания и экпорта обычного коннектора, при инициализации store, который потом и использовать в качестве HOC:
 
 ```js
 // store.js
-import { createStore, combineReducers } from "redux";
-import makeConnect from "lite-redux";
+import { createStore } from 'redux'
+import makeConnect from 'lite-redux'
+import reducer from './reducer'
 
-const reducer = combineReducers({ ... });
+const store = createStore(reducer)
 
-const store = createStore(reducer);
-
-export default store;
+export default store
 
 // Создание стандартного коннектора
-export const connect = makeConnect(store);
+export const connect = makeConnect(store)
 ```
 
 ```js
 // Component.js
-import { connect } from "./store";
+import { connect } from './store'
 
 class Component extends WhatEver {
-    ...
+  /* ... */
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Component)
-
 ```
 
 ### Расширение отображения и наблюдаемых свойств
@@ -211,19 +207,19 @@ const withPassword = Component =>
       return {
         // Предполагается что super.properties уже содержит свойство type
         ...super.properties,
-        addonIcon: { type: String },
-      };
+        addonIcon: { type: String }
+      }
     }
-    
+
     constructor(props) {
-      super(props);
-      this.type = "password";
-      this.addonIcon = "invisible";
+      super(props)
+      this.type = 'password'
+      this.addonIcon = 'invisible'
     }
 
     setType(e) {
-      this.type = this.type === "text" ? "password" : "text";
-      this.addonIcon = this.type === "password" ? "invisible" : "visible";
+      this.type = this.type === 'text' ? 'password' : 'text'
+      this.addonIcon = this.type === 'password' ? 'invisible' : 'visible'
     }
 
     render() {
@@ -235,11 +231,11 @@ const withPassword = Component =>
             <custom-icon icon=${this.addonIcon}></custom-icon>
           </div>
         </div>
-      `;
+      `
     }
-  };
+  }
 
-customElements.define("password-input", withPassword(TextInput));
+customElements.define('password-input', withPassword(TextInput))
 ```
 
 Внимание здесь хотелось бы обратить на строку `...super.properties` в методе `get properties()`, которая позволяет не определять те свойства которые уже описаны в расширяемом компоненте. И на строку `super.render()` в методе `render`, которая выводит в указанном месте разметки отображение расширяемого элемента.
@@ -268,7 +264,7 @@ import { LitElement, html } from 'lit-element'
 
 class LiteForm extends LitElement {
   /* ...функционал формы ... */
-  
+
   render() {
     return html`<form @submit=${this.handleSubmit} method=${this.method}>
       ${this.formTemplate(this)}
@@ -276,10 +272,11 @@ class LiteForm extends LitElement {
   }
 }
 
-customElements.define("lite-form", LiteForm);
+customElements.define('lite-form', LiteForm)
 ```
 
 ```js
+// Пример формы
 // Пример формы
 import { html, render } from 'lit-element'
 
@@ -297,12 +294,12 @@ const formTemplate = ({ values, handleBlur, handleChange, ...props }) =>
     <button type="submit">Submit</button>`
 
 const MyForm = html`<lite-form
-    method="POST"
-    .formTemplate=${formTemplate}
-    .onSubmit=${{...}}
-    .initialValues=${{...}}
-    .validationSchema=${{...}}
-  ></lite-form>`
+  method="POST"
+  .formTemplate=${formTemplate}
+  .onSubmit=${{/*...*/}}
+  .initialValues=${{/*...*/}}
+  .validationSchema=${{/*...*/}}
+></lite-form>`
 
 render(html`${MyForm}`, document.getElementById('root'))
 ```
@@ -314,19 +311,19 @@ render(html`${MyForm}`, document.getElementById('root'))
 ```js
 // здесь константа IS_LITE_FORM - это назывние булевого атрибута, который имеет каждый элемент кастомной формы
 const getFormClass = element => {
-  const form = element.closest(`[${IS_LITE_FORM}]`);
-  if (form) return form;
+  const form = element.closest(`[${IS_LITE_FORM}]`)
+  if (form) return form
 
-  const host = element.getRootNode().host;
-  if (!host) throw new Error("Lite-form not found");
-  return host[IS_LITE_FORM] ? host : getFormClass(host);
-};
+  const host = element.getRootNode().host
+  if (!host) throw new Error('Lite-form not found')
+  return host[IS_LITE_FORM] ? host : getFormClass(host)
+}
 ```
 Здесь все тривиально: рекурсивный поиск элемента с атрибутом, указывающим что это искомая форма. Отметить хотелось функцию [getRootNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode), благодаря которой поиск происходит сквозь дерево вложенных Shadow DOM - необходимая функция при решении таких специфических задач.
 
 С использованием `withField` я мог сильно упростить шаблон формы:
 ```js
-const formTemplate = (props) =>
+const formTemplate = props =>
   html`<custom-input name="firstName"></custom-input>
     <custom-input name="lastName"></custom-input>
     <button type="submit">Submit</button>`
@@ -425,9 +422,7 @@ export const withForm = ({
       this._onSubmit = (onSubmit || this.onSubmit || function () {}).bind(this)
       this._initialValues = initialValues || this.initialValues || {}
       this._validationSchema = validationSchema || this.validationSchema || {}
-
-      /* ...функционал формы ... */
-
+      /* ... */
       super.connectedCallback && super.connectedCallback()
     }
 
@@ -469,15 +464,9 @@ class UserForm extends LitElement {
 }
 
 const enhance = withForm({
-  initialValues: {
-    /*...*/
-  },
-  onSubmit: {
-    /*...*/
-  },
-  validationSchema: {
-    /*...*/
-  }
+  initialValues: {/*...*/},
+  onSubmit: {/*...*/},
+  validationSchema: {/*...*/}
 })
 
 customElements.define('user-form', enhance(UserForm))
