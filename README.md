@@ -18,9 +18,9 @@
 ## Будущее уже настало? 
 Большинство современных браузеров, включая мобильные, поддерживают веб-компоненты из коробки. Для остальных есть [полифилы](https://www.npmjs.com/package/@webcomponents/webcomponentsjs). Примечательно, что для полифилов есть умный [лоадер](https://www.npmjs.com/package/@webcomponents/webcomponentsjs#using-webcomponents-loaderjs) (~2kB), который не загружает полифил определенного функционала, если для него есть нативная поддержка браузером — таким образом, в современные браузеры ничего не загружается. Полифилы заявляют поддержку вплоть до IE11 и старых версий Edge. К счастью, мы не поддерживаем IE в наших проектах, в Edge действительно все работает. Также все работает в китайских UC Browser и QQ Browser, включая их мобильные версии.
 
-> Небольшие ограничения по работе полифилов:
-> - Полифильный тег ```<slot></slot>``` для IE11 & Edge не участвуют во всплытии событий;
-> - Этот набор полифилов не предоставляет функционал для расширения встроенных html-элементов. Об этом подробнее ниже.
+*Небольшие ограничения по работе полифилов:*
+- *Полифильный тег ```<slot></slot>``` для IE11 & Edge не участвуют во всплытии событий;*
+- *Этот набор полифилов не предоставляет функционал для расширения встроенных html-элементов. Об этом подробнее ниже.*
 
 
 ## LitElement
@@ -362,7 +362,7 @@ const formTemplate = props =>
 ### Почему я отказался от Shadow DOM
 Во-первых, из-за невозможности автозаполнения форм хранимыми пользовательскими данными (логин-пароль, адрес, данные кредитных карт) если форма или поля ввода скрыты за Shadow DOM. Также браузер не предлагает сохранить пользовательские данные с таких форм. В моем проекте этот недостаток (или фича, кому как ближе) стал критичным.
 
->  Конечно, если для передачи шаблона формы используются только слоты, и этот шаблон описан в основном документе, которому он и будет принадлежать, то автозаполнение произойдет даже при использовании Shadow DOM в компоненте формы. Но кроме этого, все компоненты, в которые вложена форма, и все поля ввода не должны использовать Shadow DOM. Это настолько сильные ограничения, что проще отказаться от Shadow DOM.
+*Конечно, если для передачи шаблона формы используются только слоты, и этот шаблон описан в основном документе, которому он и будет принадлежать, то автозаполнение произойдет даже при использовании Shadow DOM в компоненте формы. Но кроме этого, все компоненты, в которые вложена форма, и все поля ввода не должны использовать Shadow DOM. Это настолько сильные ограничения, что проще отказаться от Shadow DOM.*
 
 Во-вторых, из-за отсутствия аналога querySelector, который работал бы сквозь Shadow DOM. Для метрик и аналитики такой инструмент был бы полезен, чтобы, например в Google Tag Manager не писать длинные конструкции типа  `document.querySelector(...) .shadowRoot.querySelector(...) .shadowRoot.querySelector(...) .shadowRoot.querySelector(...)`
 
@@ -492,14 +492,4 @@ Shadow DOM определенно будет полезен для ряда сл
 
 
 ### Полезные ссылки 
-[webcomponents.org,](https://www.webcomponents.org/)
-[Polymer,](https://www.polymer-project.org/)
-[LitElement,](https://lit-element.polymer-project.org/)
-[lit-html,](https://lit-html.polymer-project.org/)
-[Vaadin Router,](https://vaadin.com/router)
-[Vaadin Components,](https://vaadin.com/components)
-[lite-redux,](https://www.npmjs.com/package/lite-redux) 
-[lite-form,](https://www.npmjs.com/package/lite-form)
-[awesome-lit-html,](https://github.com/web-padawan/awesome-lit-html)
-[Polyfills,](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs)
-[custom-elements-builtin polyfill](https://www.npmjs.com/package/@ungap/custom-elements-builtin)
+[webcomponents.org,](https://www.webcomponents.org/) [Polymer,](https://www.polymer-project.org/) [LitElement,](https://lit-element.polymer-project.org/) [lit-html,](https://lit-html.polymer-project.org/) [Vaadin Router,](https://vaadin.com/router) [Vaadin Components,](https://vaadin.com/components) [lite-redux,](https://www.npmjs.com/package/lite-redux) [lite-form,](https://www.npmjs.com/package/lite-form) [awesome-lit-html,](https://github.com/web-padawan/awesome-lit-html) [Polyfills,](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs) [custom-elements-builtin polyfill](https://www.npmjs.com/package/@ungap/custom-elements-builtin)
