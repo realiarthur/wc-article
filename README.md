@@ -1,9 +1,13 @@
 # Веб-компоненты в реальном проекте
 
+![](https://habrastorage.org/webt/at/3x/wm/at3xwmorjkpfckmmrjqp1uncvzg.png)
+
 Всем привет! Меня зовут Артур, я работаю frontend-разработчиком в Exness. Не так давно мы перевели один из наших проектов на веб-компоненты. Расскажу с какими проблемами пришлось столкнуться, и о том, как многие концепции, к которым мы привыкли при работе с фреймворками, легко перекладываются на веб-компоненты.  
  
 Забегая вперед, скажу, что реализованный проект успешно прошел тестирование на нашей широкой аудитории, а размер бандла и время загрузки удалось ощутимо сократить.
- 
+
+<cut />
+
 Предполагаю, что у вас уже есть базовое представление о технологии, но и без него будет понятно, что с веб-компонентами можно вполне удобно работать и организовывать архитектуру проекта.
 
 
@@ -30,7 +34,7 @@ LitElement — это еще одна зависимость, кто-то даж
 ## Функциональные компоненты-шаблоны
 К теме статьи это имеет косвенное отношение, но lit-html в свои ~3.5kB вмещает очень удобную возможность описания интерфейса с помощью функций. Причем обновление DOM-структур таких функций-компонентов происходит оптимизировано: рендерятся только те блоки, значения которых изменились с предыдущего рендера. В некоторых случаях и при должной находчивости весь интерфейс можно описать только функциями, декораторами и директивами (о них чуть ниже):
 
-```js
+```Javascript
 import { html, render } from 'lit-html'
 
 const ui = data => html`...${data}...`
@@ -39,7 +43,7 @@ render(ui('Hello!'), document.body)
 ```
 
 При этом в одних шаблонах можно использовать другие:
-```js 
+```Javascript 
 const myHeader = html`<h1>Header</h1>`
 const myPage = html`
   ${myHeader}
@@ -48,7 +52,7 @@ const myPage = html`
 ```
 
 В других случаях можно придумать обертку для создания кастомных элементов из таких функций: 
-```js
+```Javascript
 const defineFxComponent = (tagName, FxComponent, Parent = LitElement) => {
   const Component = class extends Parent {
     render() {
@@ -83,7 +87,7 @@ render(html`<custom-ui .data="Hello!"></custom-ui>`, document.body)
 Директива хранит в себе значение `value` — это то, что было выведено на ее месте при последнем рендере. Для установки нового значения существует функция `setValue()`. Для принудительного обновления значений в DOM после того, как рендер был завершен, используется функция `commit()` (полезно при асинхронных действиях).
 
 Пример кастомной директивы (имеющей доступ к классу NodePart — для вывода контента), которая хранит и выводит количество рендеров: 
-```js
+```Javascript
 import { directive } from 'lit-html'
 
 const renderCounter = directive(() => part =>
@@ -108,7 +112,7 @@ HOC — мощный паттерн, часто используемый при 
 ### Расширение функционала
 В проекте мне необходим был redux, поэтому в качестве примера рассмотрим [коннектор для него](https://github.com/realiarthur/lite-redux). Ниже представлен код декоратора, принимающего store и возвращающего стандартный коннектор redux. Внутри класса происходит накопление mapStateToProps из всей цепочки наследования (для тех случаев, если в ней будет HOC, который также общается с redux), чтобы в дальнейшем, когда компонент будет встроен в DOM, одним колбеком подписать их все на изменение состояния redux. При удалении компонента из DOM эта подписка удаляется.
 
-```js
+```Javascript
 import { bindActionCreators } from 'redux'
 
 export default store => (mapStateToProps, mapDispatchToProps) => Component =>
@@ -174,7 +178,7 @@ export default store => (mapStateToProps, mapDispatchToProps) => Component =>
 
 Удобнее всего использовать этот метод при инициализации store для создания и экспорта обычного коннектора, который можно использовать в качестве компонента высшего порядка:
 
-```js
+```Javascript
 // store.js
 import { createStore } from 'redux'
 import makeConnect from 'lite-redux'
@@ -188,7 +192,7 @@ export default store
 export const connect = makeConnect(store)
 ```
 
-```js
+```Javascript
 // Component.js
 import { connect } from './store'
 
@@ -202,7 +206,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(Component)
 ### Расширение отображения и наблюдаемых свойств
 Во многих случаях кроме расширения функционала компонента требуется обернуть его отображение. Для этого удобно использовать функцию рендеринга расширяемого компонента. Кроме того, бывает полезно расширить список наблюдаемых свойств для обеспечения реактивности: `get observedAttributes()` для веб-компонентов или `get properties()` для LitElement. Для иллюстрации приведу пример поля ввода пароля, которое расширяет переданный ей компонент текстового поля ввода:
 
-```js
+```Javascript
 const withPassword = Component =>
   class PasswordInput extends Component {
     static get properties() {
@@ -261,7 +265,7 @@ customElements.define('password-input', withPassword(TextInput))
 
 Решением стала передача шаблона в качестве свойства для кастомной формы. Это некий аналог передачи render-функции в React: 
 
-```js
+```Javascript
 // Компонент формы
 import { LitElement, html } from 'lit-element'
 
@@ -278,7 +282,7 @@ class LiteForm extends LitElement {
 customElements.define('lite-form', LiteForm)
 ```
 
-```js
+```Javascript
 // Пример формы
 import { html, render } from 'lit-element'
 
@@ -310,7 +314,7 @@ render(html`${MyForm}`, document.getElementById('root'))
 
 Такая реализация требовала, чтобы HOC'и были способны самостоятельно найти свою форму или общаться с ней посредством событий. Перебрав несколько вариантов (общение через шину событий, общий контекст — все они подходили, если форма на странице только одна), я остановился на очень простом, но рабочем:
 
-```js
+```Javascript
 // здесь константа IS_LITE_FORM — это имя булевого атрибута, который имеет каждый элемент кастомной формы
 const getFormClass = element => {
   const form = element.closest(`[${IS_LITE_FORM}]`)
@@ -326,7 +330,7 @@ const getFormClass = element => {
 Отметить хотелось функцию [getRootNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode), благодаря которой поиск проходит сквозь дерево вложенных Shadow DOM — необходимая функция при решении таких специфичных задач.
 
 С использованием `withField` я мог сильно упростить шаблон формы:
-```js
+```Javascript
 const formTemplate = props =>
   html`<custom-input name="firstName"></custom-input>
     <custom-input name="lastName"></custom-input>
@@ -363,7 +367,7 @@ const formTemplate = props =>
 Во-вторых, из-за отсутствия аналога querySelector, который работал бы сквозь Shadow DOM. Для метрик и аналитики такой инструмент был бы полезен, чтобы, например в Google Tag Manager не писать длинные конструкции типа  `document.querySelector(...) .shadowRoot.querySelector(...) .shadowRoot.querySelector(...) .shadowRoot.querySelector(...)`
 
 С отказом от Shadow DOM особых трудностей не возникло. В LitElement для этого достаточно такого кода:
-```js
+```Javascript
 createRenderRoot() {
   return this
 }
@@ -372,7 +376,7 @@ createRenderRoot() {
 
 ### Версия 2. Расширение встроенного элемента
 После отказа от Shadow DOM мне показалось хорошей идеей расширить встроенный класс HTMLFormElement и тег `<form>` — верстка бы смотрелась как нативная, и при этом сохранился бы доступ ко всем событиям формы, и это требовало минимальных изменений кода:
-```js
+```Javascript
 // Компонент формы
 class LiteForm extends HTMLFormElement {
   connectedCallback() {
@@ -389,7 +393,7 @@ class LiteForm extends HTMLFormElement {
 customElements.define('lite-form', LiteForm, { extends: 'form' })
 ```
 Все работало как в обычной форме, только с дополнительным функционалом:
-```js
+```Javascript
 // Пример формы
 const MyForm = html`<form
   method="POST"
@@ -411,7 +415,7 @@ render(html`${MyForm}`, document.getElementById('root'))
 
 ### Версия 3. Компонент высшего порядка
 После пары неудачных попыток обернуть функционал формы я решил оставить это за ее пределами и сделать компонент высшего порядка, чтобы оборачивать им все, что понадобится. Это потребовало небольших изменений кода:
-```js
+```Javascript
 // Компонент высшего порядка формы
 export const withForm = ({
   onSubmit,
@@ -434,7 +438,7 @@ export const withForm = ({
 
 Здесь в функции `connectedCallback()` форма принимает конфиг (onSubmit, initialValues, validationSchema, и др.) либо из аргументов, переданных в `withForm()`, либо из самого расширяемого компонента. Это позволяет оборачивать любые классы, а также строить базовые классы, которые можно использовать в верстке, передавая конфиг в ней. К слову, этим способом можно построить оба базовых класса из первых реализаций формы:
 
-```js
+```Javascript
 // Пример базового класса из первой реализации формы
 class LiteForm extends LitElement {
   render() {
@@ -451,7 +455,7 @@ customElements.define('lite-form', enhance(LiteForm))
 
 С другой стороны, можно не создавать базовый класс формы, и оборачивать в `withForm()` конечные компоненты, содержащие шаблоны форм:
 
-```js
+```Javascript
 // Пример формы
 class UserForm extends LitElement {
   render() {
