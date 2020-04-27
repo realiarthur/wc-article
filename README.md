@@ -434,7 +434,10 @@ export const withForm = ({
 Здесь в функции `connectedCallback()` форма принимает конфиг (onSubmit, initialValues, validationSchema, и др.) либо из аргументов, переданных в `withForm()`, либо из самого расширяемого компонента. Это позволяет оборачивать любые классы, а также строить базовые классы, которые можно использовать в верстке, передавая конфиг в ней. К слову, этим способом можно построить оба базовых класса из первых реализаций формы:
 
 ```Javascript
-// Пример базового класса из первой реализации формы
+// Пример базового класса из первой реализации формы:
+// Стандартный веб-компонент или LitElement
+import { withForm } from 'lite-form'
+
 class LiteForm extends LitElement {
   render() {
     return html`<form @submit=${this.handleSubmit} method=${this.method}>
@@ -443,15 +446,33 @@ class LiteForm extends LitElement {
   }
 }
 
-enhance = withForm()
+customElements.define('lite-form', withForm(LiteForm))
+```
 
-customElements.define('lite-form', enhance(LiteForm))
+```Javascript
+// Пример базового класса из второй реализации формы:
+// Расширение встроенного элемента
+import { withForm } from 'lite-form'
+
+class LiteForm extends HTMLFormElement {
+  connectedCallback() {
+    this.addEventListener('submit', this.handleSubmit)
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('submit', this.handleSubmit)
+  }
+}
+
+customElements.define('lite-form', withForm(LiteForm), { extends: 'form' })
 ```
 
 С другой стороны, можно не создавать базовый класс формы, и оборачивать в `withForm()` конечные компоненты, содержащие шаблоны форм:
 
 ```Javascript
 // Пример формы
+import { withForm } from 'lite-form'
+
 class UserForm extends LitElement {
   render() {
     return html`
